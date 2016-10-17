@@ -25,7 +25,7 @@ $('#m').keyup(function() {
 	CHAT.stopTyping();
 });
 w.CHAT = {
-	msgObj:d.getElementById("message"),
+	msgObj:d.getElementById("m"),
 	screenheight:w.innerHeight ? w.innerHeight : dx.clientHeight,
 	username:null,
 	userid:null,
@@ -36,20 +36,21 @@ w.CHAT = {
 		this.username = username;
 		
 		d.getElementById("showusername").innerHTML = this.username;
-		// this.scrollToBottom();
-		this.socket = io();
+		this.scrollToBottom();
+		// using a namespace here
+		this.socket = io('/chat');
 
 		this.socket.emit('login', {userid:this.userid, username:this.username});
 		
-		//监听新用户登录
-		// this.socket.on('login', function(o){
-		// 	CHAT.updateSysMsg(o, 'login');	
-		// });
+		// 监听新用户登录
+		this.socket.on('login', function(o){
+			CHAT.updateSysMsg(o, 'login');	
+		});
 		
-		//监听用户退出
-		// this.socket.on('logout', function(o){
-		// 	CHAT.updateSysMsg(o, 'logout');
-		// });
+		// // 监听用户退出
+		this.socket.on('logout', function(o){
+			CHAT.updateSysMsg(o, 'logout');
+		});
 
 		this.socket.on('chat message', function(obj) {
 			var isme = (obj.userid == CHAT.userid) ? true : false;
@@ -103,7 +104,8 @@ w.CHAT = {
 		return false;
 	},
 	scrollToBottom:function() {
-		w.scrollTo(0, this.msgObj.clientHeight);
+		// w.scrollTo(0, this.msgObj.clientHeight);
+		$("html, body").animate({ scrollTop: $(document).height()-$(window).height() });
 	},
 	logout:function() {
 		//this.socket.disconnect();
