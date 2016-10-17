@@ -18,6 +18,12 @@ $('#m').keypress(function(e) {
 		CHAT.sendMsg();
 	}
 });
+$('#m').keydown(function() {
+	CHAT.startTyping();
+});
+$('#m').keyup(function() {
+	CHAT.stopTyping();
+});
 w.CHAT = {
 	msgObj:d.getElementById("message"),
 	screenheight:w.innerHeight ? w.innerHeight : dx.clientHeight,
@@ -80,7 +86,7 @@ w.CHAT = {
 		}
 		return false;
 	},
-	sendMsg:function(){
+	sendMsg:function() {
 		var content = d.getElementById("m").value;
 		if(content != ''){
 			var obj = {
@@ -89,19 +95,21 @@ w.CHAT = {
 				content: content
 			};
 			this.socket.emit('chat message', obj);
+			$('#messages').append($('<li>').text(obj.username + " said: " +obj.content));
+			CHAT.scrollToBottom();	
 			d.getElementById("m").value = '';
 		}
 		// console.log('sendMsg');
 		return false;
 	},
-	scrollToBottom:function(){
+	scrollToBottom:function() {
 		w.scrollTo(0, this.msgObj.clientHeight);
 	},
-	logout:function(){
+	logout:function() {
 		//this.socket.disconnect();
 		location.reload();
 	},
-	genUid:function(){
+	genUid:function() {
 		return new Date().getTime()+""+Math.floor(Math.random()*899+100);
 	},
 	updateSysMsg:function(o, action){
@@ -134,5 +142,13 @@ w.CHAT = {
 		section.innerHTML = html;
 		this.msgObj.appendChild(section);	
 		this.scrollToBottom();
+	},
+	startTyping:function() {
+		this.socket.emit('typing', "startTyping");
+		console.log("startTyping");
+	},
+	stopTyping:function() {
+		this.socket.emit('typing', "stopTyping");
+		console.log("stopTyping");
 	},
 }

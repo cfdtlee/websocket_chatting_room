@@ -16,7 +16,7 @@ io.on('connection', function(socket) {
 	console.log('a user connected');
 
 	socket.on('login', function(obj){
-		socket.name = obj.userid;
+		socket.userid = obj.userid;
 		
 		if(!onlineUsers.hasOwnProperty(obj.userid)) {
 			onlineUsers[obj.userid] = obj.username;
@@ -28,18 +28,29 @@ io.on('connection', function(socket) {
 	});
 
 	socket.on('chat message', function(obj) {
-		io.emit('chat message', obj);
+		// io.emit('chat message', obj);
+		socket.broadcast.emit('chat message', obj);
 		console.log(obj.username+' said: '+obj.content);
 	});
+	socket.on('typing', function(str) {
+		// io.emit('chat message', obj);
+		if (str == "startTyping") {
+			socket.broadcast.emit('notification', onlineUsers[socket.userid] + "is typing");
+		}
+		else {
+			socket.broadcast.emit('notification', "");
+		}
+
+	});
 	socket.on('disconnect', function() {
-		if(onlineUsers.hasOwnProperty(socket.name)) {
-			var obj = {userid:socket.name, username:onlineUsers[socket.name]};
+		if(onlineUsers.hasOwnProperty(socket.userid)) {
+			var obj = {userid:socket.userid, username:onlineUsers[socket.userid]};
 			
-			delete onlineUsers[socket.name];
+			delete onlineUsers[socket.userid];
 			onlineCount--;
 			
 			io.emit('logout', {onlineUsers:onlineUsers, onlineCount:onlineCount, user:obj});
-			console.log(obj.username+'has quitted.');
+			console.log(obj.username+'has left.');
 		}
 	});
 });
